@@ -1,7 +1,7 @@
 // import d3;
 
 let vpWidth = window.innerWidth * 1.1;
-let vpHeight = window.innerHeight * 1.2;
+let vpHeight = window.innerHeight * 1.3;
 const radius = window.innerHeight/2;
 
 var colorin = "#00f"
@@ -27,6 +27,7 @@ tree = d3.cluster()
 leaves = readAnalysis(topic)
    .then(hierarchy)
    .then(d3.hierarchy)
+   .then(d => d.sort((x1, x2) => d3.ascending(x1.data.word, x2.data.word)))
    .then(links)
    .then(tree)
    .then(r => r.leaves())
@@ -36,8 +37,17 @@ leavesMapped = leaves
    .then(flatMap)
    // .then(console.log)
 
-// appearances = root
-//    .then(r => r.)
+maxAppearances = leaves
+   .then(l => l.map(l => l.data.appearances))
+   .then(arr => Math.max.apply(null, arr))
+   // .then(console.log)
+
+maxConnections = leaves
+   .then(l => l.map(l => l.data.connections.length))
+   .then(arr => Math.max.apply(null, arr))
+   // .then(console.log)
+
+
 
 async function draw() {
 
@@ -47,6 +57,8 @@ async function draw() {
                          vpWidth,
                          vpHeight])
 
+   const maxConn = await maxConnections;
+
    const node = svg.append("g")
       .attr("font-family", "sans-serif")
       .selectAll("g")
@@ -55,12 +67,18 @@ async function draw() {
       .attr("transform", d => `rotate(${d.x * 180 / Math.PI - 90}) translate(${d.y},0)`)
       .append("text")
       .attr("dy", "0.31em")  // center words on nodes
-      .attr("font-size", d => `${5 + d.data.appearances}px`)
+      .each( function(d) { d.color = `rgb(
+               ${ d.data.connections.length / maxConn * 204 },
+               ${ 232 - (d.data.connections.length / maxConn * 232) },
+               ${ 255 - (d.data.connections.length / maxConn * 135) })` })
+      .attr("fill", d => d.color)
+      .each( function(d) { d.fontSize = 5 + d.data.appearances})
+      .attr("font-size", d => `${d.fontSize}px`)
       .attr("x", d => d.x < Math.PI ? 6 : -6)
       .attr("text-anchor", d => d.x < Math.PI ? "start" : "end")
       .attr("transform", d => d.x >= Math.PI ? "rotate(180)" : null)
       .text(d => d.data.word.charAt(0).toUpperCase() + d.data.word.slice(1) )
-      .each( function(d) {d.text = this} )
+      .each( function(d) { d.text = this } )
       .on("mouseover", overed)
       .on("mouseout", outed)
       .call(text => text.append("title").text(d => `${d.data.word}
@@ -78,16 +96,26 @@ async function draw() {
 
    function overed(d) {
       link.style("mix-blend-mode", null);
-      d3.select(this).attr("font-weight", "bold");
-      d3.selectAll(d.connections.map(d => d.path)).attr("stroke", colorout).raise();
-      d3.selectAll(d.connections.map(d => d[1].text)).attr("fill", colorout).attr("font-weight", "bold")
+      d3.select(this)
+         .attr("font-weight", "bold")
+         .attr("font-size", d => `${d.fontSize + 5}px`);
+      d3.selectAll(d.connections.map(d => d.path))
+         .attr("stroke", d.color).raise();
+      d3.selectAll(d.connections.map(d => d[1].text))
+         .attr("font-weight", "bold")
+         .attr("font-size", d => `${d.fontSize + 5}px`);
    }
 
    function outed(d) {
       link.style("mix-blend-mode", "multiply");
-      d3.select(this).attr("font-weight", null);
-      d3.selectAll(d.connections.map(d => d.path)).attr("stroke", null);
-      d3.selectAll(d.connections.map(d => d[1].text)).attr("fill", null).attr("font-weight", null);
+      d3.select(this)
+         .attr("font-weight", null)
+         .attr("font-size", d => `${d.fontSize}px`);
+      d3.selectAll(d.connections.map(d => d.path))
+         .attr("stroke", null);
+      d3.selectAll(d.connections.map(d => d[1].text))
+         .attr("font-weight", null)
+         .attr("font-size", d => `${d.fontSize}px`);
    }
 
   return svg.node();
