@@ -10,21 +10,6 @@ creates a hierarchy structure drescribing connections between them.
 Output is stored in a .json file.
 """
 
-def save_the_analysis(topic, hierarchy):
-    """
-    Saving hierarchy structure to a .json files\n
-    @param topic - topic of the analysis, makes the file title\n
-    @param hierarchy - the structure produced in analysis process
-    """
-    if not hierarchy:
-        return
-    if not path.exists('analyses'):
-        mkdir('analyses')
-
-    with open('analyses/' + topic + '.json', 'w') as file:
-        json.dump(hierarchy, file, indent=3, ensure_ascii=False)
-
-
 def analyze(topic):
     """
     Analyzes the tweets for the topic.\n
@@ -51,29 +36,29 @@ def analyze(topic):
             else:
                 words[word] = 1
 
-    # put the words into a sorted list
-    word_list = [[word, words[word]] for word in words]
+    # put the words into a sorted list, skip the topic (we know its everywhere)
+    word_list = [[word, words[word]] for word in words if word != topic]
     word_list = sorted(word_list, key=lambda row: row[1], reverse=True)
 
     # select top50 most popular and put them into hierarchy
     top50 = word_list[:50]
-    hierarchy = {'words' : [ {'word':word[0], 'appearances': word[1], 'connections':[]} for word in top50 ]}
+    top50words = [word[0] for word in top50]
+
+    hierarchy = {'words' : [ {'word':topic+'.'+word[0], 'appearances': word[1], 'connections':[]} for word in top50 ]}
 
     # find connections
     # for every word in hierarchy
     for node in hierarchy['words']:
-        anchor = node['word']
-        matches = []  # stores words that have already appeared
+        anchor = node['word'][len(topic)+1:]
         # checks all tweets containing it
         for tweet in tweets_words:
             if anchor in tweet:
                 # gets all co-apprearing words without repeats
                 for word in tweet:
-                    if not word == anchor and word not in matches:
-                        node['connections'].append({'word':word})
-                        matches.append(word)
+                    if not word == anchor and word in top50words and topic+'.'+word not in node['connections']:
+                        node['connections'].append(topic+'.'+word)
 
-    save_the_analysis(topic, hierarchy)
+    save_the_analysis(topic, hierarchy['words'])
 
 
 def extract_tweet_words(tweet, blacklist=None):
@@ -97,6 +82,24 @@ def check_bot(tweet):
     '''
     name = tweet['screen_name'].strip('1234567890').lower()
     return ('iembot' in name or name[:3] == 'bot' or name[-3:] == 'bot')
+
+
+def save_the_analysis(topic, hierarchy):
+    """
+    Saving hierarchy structure to a .json files\n
+    @param topic - topic of the analysis, makes the file title\n
+    @param hierarchy - the structure produced in analysis process
+    """
+    directory = '../public/analyses/'
+    # ensure that the directory exists
+    if not hierarchy:
+        return
+    if not path.exists(directory):
+        mkdir(directory)
+
+    # open file and save the content
+    with open(directory + topic + '.json', 'w') as file:
+        json.dump(hierarchy, file, indent=3, ensure_ascii=False)
 
 
 if __name__ == '__main__':
