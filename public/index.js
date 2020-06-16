@@ -4,17 +4,8 @@ let vpWidth = window.innerWidth * 1.1;
 let vpHeight = window.innerHeight * 1.3;
 const radius = window.innerHeight/2;
 
-var colorin = "#00f"
-var colorout = "#f00"
 var colornone = "#ccc"
-
-
-// const svg = d3.select('svg');
-//
-// można bez problemu ustawić ciemne tło
-// svg.style('background-color', '#ddd')/[]
-
-topic = 'school'
+topic = 'visualization'
 
 line = d3.lineRadial()
     .curve(d3.curveBundle.beta(0.55))
@@ -22,7 +13,7 @@ line = d3.lineRadial()
     .angle(d => d.x)
 
 tree = d3.cluster()
-    .size([2 * Math.PI, radius*.95])
+    .size([2 * Math.PI, radius*.9])
 
 leaves = readAnalysis(topic)
    .then(hierarchy)
@@ -72,10 +63,10 @@ async function draw() {
                ${ 232 - (d.data.connections.length / maxConn * 232) },
                ${ 255 - (d.data.connections.length / maxConn * 135) })` })
       .attr("fill", d => d.color)
-      .each( function(d) { d.fontSize = 5 + d.data.appearances})
+      .each( function(d) { d.fontSize = 5 + d.data.appearances * radius / 200})
       .attr("font-size", d => `${d.fontSize}px`)
       .attr("x", d => d.x < Math.PI ? 6 : -6)
-      .attr("text-anchor", d => d.x < Math.PI ? "start" : "end")
+      .attr("text-anchor", d => d.x < Math.PI ? "start" : "end")  // shifting the text on the left side of the circle
       .attr("transform", d => d.x >= Math.PI ? "rotate(180)" : null)
       .text(d => d.data.word.charAt(0).toUpperCase() + d.data.word.slice(1) )
       .each( function(d) { d.text = this } )
@@ -100,7 +91,8 @@ async function draw() {
          .attr("font-weight", "bold")
          .attr("font-size", d => `${d.fontSize + 5}px`);
       d3.selectAll(d.connections.map(d => d.path))
-         .attr("stroke", d.color).raise();
+         .attr("stroke", d.color).raise()
+         .attr("stroke-width", vpHeight/500);
       d3.selectAll(d.connections.map(d => d[1].text))
          .attr("font-weight", "bold")
          .attr("font-size", d => `${d.fontSize + 5}px`);
@@ -112,7 +104,8 @@ async function draw() {
          .attr("font-weight", null)
          .attr("font-size", d => `${d.fontSize}px`);
       d3.selectAll(d.connections.map(d => d.path))
-         .attr("stroke", null);
+         .attr("stroke", null)
+         .attr("stroke-width", 1);
       d3.selectAll(d.connections.map(d => d[1].text))
          .attr("font-weight", null)
          .attr("font-size", d => `${d.fontSize}px`);

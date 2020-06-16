@@ -33,9 +33,44 @@ function flatMap(leaves) {
 
 async function readAnalysis(topic) {
    try {
-      let buffer = await fetch('/analyses/' + topic + '.json');
+      let buffer = await fetch('/analyses/' + topic);
       return buffer.json();
   } catch (e) {
      console.log(e)
   }
 }
+
+function onTopicSubmit(e) {
+   e.preventDefault();
+   topic = document.getElementById('topic_input').value
+   if(topic.length > 2) {
+      requestTopic(topic);
+      document.getElementById('topic_input').value = '';
+   }
+}
+
+async function requestTopic(topic) {
+   const rawResponse = await fetch('/topic', {
+     method: 'POST',
+     headers: {
+       'Accept': 'application/json',
+       'Content-Type': 'application/json'
+     },
+     body: JSON.stringify({topic: topic})
+  }).then(console.log);
+   const content = await rawResponse.json().then(console.log);
+}
+
+// (async requestTopic(topic) => {
+//   const rawResponse = await fetch('/topic' + , {
+//     method: 'POST',
+//     headers: {
+//       'Accept': 'application/json',
+//       'Content-Type': 'application/json'
+//     },
+//     body: JSON.stringify({'topic': topic})
+//   });
+//   const content = await rawResponse.json();
+//
+//   console.log(content);
+// })();
