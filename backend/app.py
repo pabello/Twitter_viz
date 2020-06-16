@@ -12,17 +12,22 @@ fetcher.authenticate()
 
 @app.route('/', methods=['POST', 'GET'])
 def get_resource():
-    print('Received a request')
     if request.method == 'GET':
-        fetcher.get_tweets('visualization')
-        Extractor.analyze('visualization')
-        return make_response("Successfully resolved request", 200)
+        try:
+            fetcher.get_tweets('visualization')
+            Extractor.analyze('visualization')
+            return make_response("Successfully resolved request", 200)
+        except:
+            return make_response("Could not load tweets :(")
     elif request.method == 'POST':
-        print('It\'s a POST request')
-        # requested_topic = request.form['topic']
-        # return make_response("Successfully resolved request", 200)
-        return make_response("Bang!", 200)
-        pass
+        print('Received a POST request')
+        try:
+            topic = request.json['topic']
+            fetcher.get_tweets(topic)
+            Extractor.analyze(topic)
+            return make_response("Successfully resolved request", 200)
+        except:
+            return make_response("Could not load tweets :(")
     else:
         return make_response("Not supported request type.", 400)
 

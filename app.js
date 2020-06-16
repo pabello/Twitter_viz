@@ -26,34 +26,33 @@ const server = http.createServer( function(req, res) {
          res.end();
          topic = JSON.parse(whole)['topic'];
 
+         const jsonString = JSON.stringify({ topic: topic });
+         const requestOptions = {
+            hostname: "127.0.0.1",
+            port: 5000,
+            path: '/',
+            method: 'POST',
+            headers: {
+               'Content-Type': 'application/json',
+               'Content-Length': jsonString.length
+            }
+         }
 
+         const reqest = http.request(requestOptions, (response) => {
+            console.log(`Request to fetch server ended with code: ${response.statusCode}`);
+            response.on('data', () => {});
+         });
+         reqest.on('error', (error) => {
+            console.log(error);
+            res.writeHead(400, { message: 'Request failed' });
+            res.end();
+         });
+
+         reqest.write(jsonString);
+         reqest.end();
       })
 
-      const jsonString = JSON.stringify({ key: topic });
 
-      const requestOptions = {
-         hostname: "127.0.0.1",
-         port: 5000,
-         path: '/',
-         method: 'POST',
-         headers: {
-            'Content-Type': 'application/json',
-            'Content-Length': jsonString.length
-         }
-      }
-
-      const reqest = http.request(requestOptions, (response) => {
-         console.log(`Request to fetch server ended with code: ${response.statusCode}`);
-         response.on('data', () => {});
-      });
-      reqest.on('error', (error) => {
-         console.log(error);
-         res.writeHead(400, { message: 'Request failed' });
-         res.end();
-      });
-
-      reqest.write(jsonString);
-      reqest.end();
 
 
       res.writeHead(200, 'Request successful', { "Content-Type": "text/html" });
