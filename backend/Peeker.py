@@ -92,11 +92,16 @@ class TweetFetcher:
 
         try:
             if last_fetched_id:
-                tweets = self.api.search(q='"'+keyword+'"'+self.filters, count=100, result_type='recent', since_id=last_fetched_id,
-                                         tweet_mode='extended', include_entities=False)
+                tweets = self.api.search(q='"'+keyword+'"'+self.filters,
+                						 count=100, result_type='recent',
+                						 since_id=last_fetched_id,
+                                         tweet_mode='extended',
+                                         include_entities=False)
             else:
-                tweets = self.api.search(q='"'+keyword+'"'+self.filters, count=100, result_type='recent',
-                                         tweet_mode='extended', include_entities=False)
+                tweets = self.api.search(q='"'+keyword+'"'+self.filters,
+                						 count=100, result_type='recent',
+                                         tweet_mode='extended',
+                                         include_entities=False)
             return tweets
 
         except tweepy.error.TweepError as error:

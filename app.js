@@ -2,7 +2,6 @@ const fs = require('fs')
 const d3 = require('d3')
 
 const url = require('url')
-const qs = require('querystring')
 const request = require('request')
 const http = require('http')
 const port = 8080
@@ -15,15 +14,13 @@ const server = http.createServer( function(req, res) {
       req.on('data', (chunk) => {
          if(whole.length > 1e4) {
             whole = '';
-            response.writeHead(413, {'Content-Type': 'text/plain'}).end();
-            request.connection.destroy();
+            res.writeHead(413, {'Content-Type': 'text/plain'}).end();
+            req.connection.destroy();
          }
          whole += chunk.toString()
       })
 
       req.on('end', () => {
-         res.writeHead(200, 'Elówa', { "Content-Type": "text/html" });
-         res.end();
          topic = JSON.parse(whole)['topic'];
 
          const jsonString = JSON.stringify({ topic: topic });
@@ -51,10 +48,6 @@ const server = http.createServer( function(req, res) {
          reqest.write(jsonString);
          reqest.end();
       })
-
-
-
-
       res.writeHead(200, 'Request successful', { "Content-Type": "text/html" });
       res.end();
 
