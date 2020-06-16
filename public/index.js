@@ -1,7 +1,7 @@
 // import d3;
 
 let vpWidth = window.innerWidth * 1.1;
-let vpHeight = window.innerHeight * 1.3;
+let vpHeight = window.innerHeight * 1.4;
 const radius = window.innerHeight/2;
 
 var colornone = "#ccc"
@@ -15,38 +15,39 @@ line = d3.lineRadial()
 tree = d3.cluster()
     .size([2 * Math.PI, radius*.9])
 
-leaves = readAnalysis(topic)
-   .then(hierarchy)
-   .then(d3.hierarchy)
-   .then(d => d.sort((x1, x2) => d3.ascending(x1.data.word, x2.data.word)))
-   .then(links)
-   .then(tree)
-   .then(r => r.leaves())
-   // .then(console.log)
-
-leavesMapped = leaves
-   .then(flatMap)
-   // .then(console.log)
-
-maxAppearances = leaves
-   .then(l => l.map(l => l.data.appearances))
-   .then(arr => Math.max.apply(null, arr))
-   // .then(console.log)
-
-maxConnections = leaves
-   .then(l => l.map(l => l.data.connections.length))
-   .then(arr => Math.max.apply(null, arr))
-   // .then(console.log)
 
 
 
 async function draw() {
+   leaves = readAnalysis(topic)
+      .then(hierarchy)
+      .then(d3.hierarchy)
+      .then(d => d.sort((x1, x2) => d3.ascending(x1.data.word, x2.data.word)))
+      .then(links)
+      .then(tree)
+      .then(r => r.leaves())
+      // .then(console.log)
+
+   leavesMapped = leaves
+      .then(flatMap)
+      // .then(console.log)
+
+   maxAppearances = leaves
+      .then(l => l.map(l => l.data.appearances))
+      .then(arr => Math.max.apply(null, arr))
+      // .then(console.log)
+
+   maxConnections = leaves
+      .then(l => l.map(l => l.data.connections.length))
+      .then(arr => Math.max.apply(null, arr))
+      // .then(console.log)
 
    const svg = d3.select("svg")
       .attr("viewBox", [-vpWidth / 2,
                         -vpHeight / 2,
                          vpWidth,
                          vpHeight])
+   svg.selectAll("*").remove();
 
    const maxConn = await maxConnections;
 

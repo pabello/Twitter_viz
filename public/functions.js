@@ -57,8 +57,9 @@ async function requestTopic(topic) {
        'Content-Type': 'application/json'
      },
      body: JSON.stringify({topic: topic})
-  }).then(console.log);
-   const content = await rawResponse.json().then(console.log);
+  }).then(console.log)
+    .then(d => { draw() });
+   // const content = await rawResponse.json().then(console.log);
 }
 
 // (async requestTopic(topic) => {
